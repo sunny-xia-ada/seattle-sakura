@@ -139,24 +139,28 @@
             border-color: var(--sakura-accent);
         }
 
+        /* --- 核心修改：垂直排列的容器 --- */
         .carousel-view {
             width: 100vw;
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: center;
         }
 
         .carousel-container {
             display: flex;
-            gap: 40px;
-            padding: 0 15vw;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
+            flex-direction: column;
+            /* 纵向排列 */
+            gap: 100px;
+            /* 卡片之间的纵向间距 */
+            padding: 100px 0;
+            overflow-y: auto;
+            /* 纵向滚动 */
+            scroll-snap-type: y mandatory;
+            /* 纵向滚动捕捉 */
             width: 100%;
-            height: 90vh;
+            height: 100%;
             align-items: center;
             scrollbar-width: none;
         }
@@ -186,7 +190,6 @@
             background: var(--pearl-pink);
         }
 
-        /* 磨砂玻璃图层 */
         .parallax-card::after {
             content: '';
             position: absolute;
@@ -266,10 +269,10 @@
 
         .back-btn {
             position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 45px;
+            top: 40px;
+            right: 40px;
+            /* 纵向滑动时，返回按钮放在右上角更方便操作 */
+            padding: 12px 30px;
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
@@ -278,6 +281,12 @@
             z-index: 100;
             color: var(--text-main);
             transition: all 0.5s var(--ease-poetic);
+        }
+
+        .back-btn:hover {
+            background: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
         }
 
         @media (max-width: 650px) {
@@ -292,6 +301,13 @@
             .parallax-card {
                 width: 85vw;
                 height: 70vh;
+            }
+
+            .back-btn {
+                top: 20px;
+                right: 20px;
+                padding: 10px 20px;
+                font-size: 0.8rem;
             }
         }
     </style>
