@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seattle Sakura Mood Map | 西雅图樱花情绪地图 🌸</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+SC:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --pearl-pink: #F7E7E9;
+            --fog-white: #FFFFFF;
+            --icy-blue: #F0F8FF;
+            --sakura-accent: #ffb7c5;
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-blur: 50px;
+            --text-main: #4a3b3e;
+            --ease-poetic: cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--fog-white) 0%, var(--pearl-pink) 50%, var(--icy-blue) 100%);
+            color: var(--text-main);
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 3000px;
+        }
+
+        .view {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 1.2s var(--ease-poetic);
+            will-change: transform, opacity;
+        }
+
+        .view.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9) translateZ(-500px);
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero-title {
+            font-size: 1.6rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            font-weight: 300;
+            opacity: 0.4;
+            margin-bottom: 2rem;
+        }
+
+        .question {
+            font-size: 3.5rem;
+            font-weight: 500;
+            font-family: 'Noto Serif SC', serif;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .mood-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 800px;
+        }
+
+        .minimal-btn {
+            padding: 20px 45px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: 12px;
+            transition: all 0.6s var(--ease-poetic);
+            color: var(--text-main);
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+
+        .minimal-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(247, 231, 233, 0.8);
+            border-color: var(--sakura-accent);
+        }
+
+        .carousel-view {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .carousel-container {
+            display: flex;
+            gap: 40px;
+            padding: 0 15vw;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            width: 100%;
+            height: 90vh;
+            align-items: center;
+            scrollbar-width: none;
+        }
+
+        .carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .card-wrapper {
+            scroll-snap-align: center;
+            perspective: 3000px;
+            flex-shrink: 0;
+            padding: 20px;
+        }
+
+        .parallax-card {
+            width: 480px;
+            height: 720px;
+            border-radius: 40px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.1);
+            background: var(--pearl-pink);
+        }
+
+        /* 磨砂玻璃图层 */
+        .parallax-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 235, 240, 0.3) 100%);
+            backdrop-filter: contrast(0.9) brightness(1.05);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card-bg {
+            position: absolute;
+            inset: -10%;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            transition: transform 1.5s var(--ease-poetic);
+            filter: saturate(0.85) contrast(1.05);
+        }
+
+        .card-content {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 10;
+            transform: translateZ(100px);
+        }
+
+        .frosted-overlay {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(45px);
+            -webkit-backdrop-filter: blur(45px);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .card-insight {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #5d4a4e;
+            margin-bottom: 20px;
+        }
+
+        .card-route {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.5;
+            margin-bottom: 35px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding-top: 20px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 18px 40px;
+            text-decoration: none;
+            background: var(--text-main);
+            color: #fff;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.5s var(--ease-poetic);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 45px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 100;
+            color: var(--text-main);
+            transition: all 0.5s var(--ease-poetic);
+        }
+
+        @media (max-width: 650px) {
+            .hero-title {
+                font-size: 1.1rem;
+            }
+
+            .question {
+                font-size: 2.2rem;
+            }
+
+            .parallax-card {
+                width: 85vw;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <div id="mood-view" class="view">
+            <div class="hero-section">
+                <h1 class="hero-title">Seattle Sakura Mood Map</h1>
+                <p class="hero-subtitle">不要查攻略了，让樱花来匹配你的情绪。</p>
+                <p class="question">今天是什么心情？</p>
+            </div>
+            <div class="mood-grid">
+                <button class="minimal-btn" onclick="selectMood('tired')">累了，想歇会</button>
+                <button class="minimal-btn" onclick="selectMood('pretty')">想拍绝美 OOTD</button>
+                <button class="minimal-btn" onclick="selectMood('quiet')">需要安静独处</button>
+                <button class="minimal-btn" onclick="selectMood('romantic')">想要浪漫约会</button>
+            </div>
+        </div>
+
+        <div id="result-view" class="view hidden">
+            <div class="carousel-view">
+                <div class="carousel-container" id="carousel"></div>
+                <button class="back-btn" onclick="goBack()">← 返回心情</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 映射本地图片 pic1.jpg 到 pic8.jpg ---
+        const moodData = {
+            tired: [
+                { spot: "Kobe Terrace", image: "pic1.jpg", insight: "刚练完 Pilates 实在不想动？在这里买杯热茶，在石灯笼旁看一场慢速落下的樱吹雪。", route: "轻量路线：打车直达停车场，步行 2 分钟即可享受无敌视野。" },
+                { spot: "Japanese Garden", image: "pic2.jpg", insight: "精巧的枯山水与樱花交织，在这里，时间是静止的。适合漫无目的地发呆。", route: "建议入园后左转，茶室附近的樱花密度最高且光线最柔和。" }
+            ],
+            pretty: [
+                { spot: "UW Quad", image: "pic3.jpg", insight: "西雅图樱花的绝对 C 位。去粉色隧道里做电影女主角。", route: "9:00 AM 前到达，利用建筑阴影拍出清透的高级感感人像。" },
+                { spot: "Arboretum", image: "pic4.jpg", insight: "层层叠叠的樱花林带，像是一块天然的背景板，适合捕捉全身的氛围感大片。", route: "沿着 Azalea Way 主干道寻找垂向草坪的枝条，那是天然的取景框。" }
+            ],
+            quiet: [
+                { spot: "Heritage Park", image: "pic5.jpg", insight: "躲开华盛顿大学的人潮，这里只有微风拂过花瓣的声音。独享一个下午。", route: "公园南侧的长椅正对着最茂密的那株樱花，是最佳冥想位。" },
+                { spot: "Seward Park", image: "pic6.jpg", insight: "广阔的湖畔，总能找到一棵只属于你的樱花树。看湖水粼粼，花落无声。", route: "避开主入口，向半岛深处走 10 分钟，那里的樱花树更安静、更繁茂。" }
+            ],
+            romantic: [
+                { spot: "Juanita Beach", image: "pic7.jpg", insight: "夕阳、湖光与樱花。当湖面被染成粉紫色，这就是最完美的约会终点。", route: "黄昏时分去走木栈道，从湖面上回望岸边的樱花，视觉感拉满。" },
+                { spot: "Green Lake", image: "pic8.jpg", insight: "并肩漫步在环湖跑道上，在不经意的转角遇见一场突如其来的樱花雨。", route: "租一艘脚踏船，从湖中心看两岸的粉色缎带，这是最浪漫的视角。" }
+            ]
+        };
+
+        // --- 粒子引擎 ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let petals = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Petal {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.w = 12 + Math.random() * 8;
+                this.h = 8 + Math.random() * 8;
+                this.opacity = 0.15 + Math.random() * 0.3;
+                this.flip = Math.random() * Math.PI;
+                this.xSpeed = 0.5 + Math.random() * 1.5;
+                this.ySpeed = 1.0 + Math.random() * 1.5;
+                this.flipSpeed = 0.03 + Math.random() * 0.05;
+            }
+            draw() {
+                if (this.y > canvas.height || this.x > canvas.width) this.init();
+                this.x += this.xSpeed; this.y += this.ySpeed; this.flip += this.flipSpeed;
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.flip);
+                ctx.scale(Math.sin(this.flip), 1); ctx.beginPath(); ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-this.w / 2, -this.h / 2, -this.w, this.h / 2, 0, this.h);
+                ctx.bezierCurveTo(this.w, this.h / 2, this.w / 2, -this.h / 2, 0, 0);
+                ctx.fillStyle = `rgba(255, 183, 197, ${this.opacity})`; ctx.fill(); ctx.restore();
+            }
+        }
+        for (let i = 0; i < 40; i++) petals.push(new Petal());
+        function loop() { ctx.clearRect(0, 0, canvas.width, canvas.height); petals.forEach(p => p.draw()); requestAnimationFrame(loop); }
+        loop();
+
+        function selectMood(mood) {
+            const carousel = document.getElementById('carousel');
+            const items = moodData[mood];
+            carousel.innerHTML = items.map(item => `
+            <div class="card-wrapper">
+                <div class="parallax-card" onmousemove="tilt(event, this)" onmouseleave="resetTilt(this)">
+                    <div class="card-bg" style="background-image: url('${item.image}')"></div>
+                    <div class="card-content">
+                        <div class="frosted-overlay">
+                            <h2 class="card-title">${item.spot}</h2>
+                            <p class="card-insight">${item.insight}</p>
+                            <p class="card-route">${item.route}</p>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.spot)}+Seattle" target="_blank" class="action-btn">在 Google Maps 中打开</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+            document.getElementById('mood-view').classList.add('hidden');
+            setTimeout(() => { document.getElementById('result-view').classList.remove('hidden'); }, 800);
+        }
+
+        function goBack() {
+            document.getElementById('result-view').classList.add('hidden');
+            setTimeout(() => { document.getElementById('mood-view').classList.remove('hidden'); }, 800);
+        }
+
+        function tilt(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+            const rotateX = (y - rect.height / 2) / 25; const rotateY = (rect.width / 2 - x) / 25;
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            const bg = card.querySelector('.card-bg');
+            bg.style.transform = `scale(1.1) translate(${-rotateY * 4}px, ${rotateX * 4}px)`;
+        }
+
+        function resetTilt(card) {
+            card.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+            const bg = card.querySelector('.card-bg');
+            bg.style.transform = `scale(1) translate(0, 0)`;
+        }
+    </script>
+</body>
+
+</html>
