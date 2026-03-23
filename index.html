@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Seattle Sakura Mood Map | 西雅图樱花情绪地图 🌸</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,9 +16,9 @@
             --fog-white: #FFFFFF;
             --icy-blue: #F0F8FF;
             --sakura-accent: #ffb7c5;
-            --glass-bg: rgba(255, 255, 255, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --glass-blur: 50px;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-blur: 25px;
             --text-main: #4a3b3e;
             --ease-poetic: cubic-bezier(0.2, 1, 0.3, 1);
         }
@@ -28,6 +28,7 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body,
@@ -48,7 +49,6 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
-            filter: blur(1px);
         }
 
         .container {
@@ -59,7 +59,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 3000px;
+            perspective: 2000px;
         }
 
         .view {
@@ -70,97 +70,86 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 1.2s var(--ease-poetic);
+            transition: all 1s var(--ease-poetic);
             will-change: transform, opacity;
         }
 
         .view.hidden {
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.9) translateZ(-500px);
+            transform: scale(0.95) translateY(20px);
+            filter: blur(10px);
         }
 
+        /* --- 首页 --- */
         .hero-section {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
+            padding: 0 20px;
         }
 
         .hero-title {
-            font-size: 1.6rem;
+            font-size: 1.2rem;
             font-weight: 300;
             letter-spacing: 0.15em;
             opacity: 0.6;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
         }
 
-        .hero-subtitle {
-            font-size: 0.9rem;
-            font-weight: 300;
-            opacity: 0.4;
-            margin-bottom: 2rem;
-        }
-
         .question {
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 10vw, 3.5rem);
             font-weight: 500;
             font-family: 'Noto Serif SC', serif;
             color: var(--text-main);
-            letter-spacing: -0.02em;
+            line-height: 1.2;
         }
 
         .mood-grid {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
-            max-width: 800px;
+            max-width: 600px;
+            padding: 0 20px;
         }
 
         .minimal-btn {
-            padding: 20px 45px;
-            font-size: 1.1rem;
+            padding: 16px 32px;
+            font-size: 1rem;
             cursor: pointer;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-radius: 12px;
-            transition: all 0.6s var(--ease-poetic);
+            border-radius: 50px;
+            transition: all 0.4s var(--ease-poetic);
             color: var(--text-main);
-            letter-spacing: 0.05em;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         .minimal-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(247, 231, 233, 0.8);
+            background: #fff;
+            transform: translateY(-3px);
             border-color: var(--sakura-accent);
         }
 
-        /* --- 核心修改：垂直排列的容器 --- */
+        /* --- 结果页卡片容器 --- */
         .carousel-view {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
         }
 
         .carousel-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            /* 纵向排列 */
-            gap: 100px;
-            /* 卡片之间的纵向间距 */
-            padding: 100px 0;
+            gap: 60px;
+            padding: 80px 0;
             overflow-y: auto;
-            /* 纵向滚动 */
             scroll-snap-type: y mandatory;
-            /* 纵向滚动捕捉 */
-            width: 100%;
-            height: 100%;
             align-items: center;
             scrollbar-width: none;
         }
@@ -171,33 +160,23 @@
 
         .card-wrapper {
             scroll-snap-align: center;
-            perspective: 3000px;
             flex-shrink: 0;
             padding: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         .parallax-card {
-            width: 480px;
-            height: 720px;
-            border-radius: 40px;
+            width: 420px;
+            max-width: 90vw;
+            height: 650px;
+            border-radius: 35px;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transform-style: preserve-3d;
-            transition: transform 0.15s ease-out;
             position: relative;
-            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.1);
-            background: var(--pearl-pink);
-        }
-
-        .parallax-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 235, 240, 0.3) 100%);
-            backdrop-filter: contrast(0.9) brightness(1.05);
-            pointer-events: none;
-            z-index: 1;
+            background: #fff;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+            transform-style: preserve-3d;
         }
 
         .card-bg {
@@ -205,123 +184,128 @@
             inset: -10%;
             background-size: cover;
             background-position: center;
+            background-color: #fce4ec;
+            /* 没图时的保底色 */
             z-index: 0;
-            transition: transform 1.5s var(--ease-poetic);
-            filter: saturate(0.85) contrast(1.05);
+            transition: transform 0.5s ease-out;
         }
 
         .card-content {
-            flex: 1;
-            padding: 50px;
+            position: absolute;
+            inset: 0;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             z-index: 10;
-            transform: translateZ(100px);
         }
 
         .frosted-overlay {
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(45px);
-            -webkit-backdrop-filter: blur(45px);
-            padding: 40px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 25px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .card-title {
-            font-size: 2.8rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 12px;
             font-family: 'Noto Serif SC', serif;
+            margin-bottom: 10px;
         }
 
         .card-insight {
-            font-size: 1.1rem;
-            line-height: 1.7;
+            font-size: 1rem;
+            line-height: 1.5;
             color: #5d4a4e;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .card-route {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            opacity: 0.5;
-            margin-bottom: 35px;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            margin-bottom: 20px;
+            padding-top: 15px;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
-            padding-top: 20px;
         }
 
+        /* 修复的核心：按钮宽度和字体调整 */
         .action-btn {
-            display: inline-block;
-            padding: 18px 40px;
+            display: block;
+            /* 设为块级元素 */
+            width: 100%;
+            /* 手机端占满容器宽度 */
+            padding: 16px 10px;
+            text-align: center;
             text-decoration: none;
             background: var(--text-main);
             color: #fff;
-            border-radius: 50px;
-            font-weight: 500;
-            transition: all 0.5s var(--ease-poetic);
-            font-size: 1rem;
-            text-align: center;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            /* 稍微缩小一点防止挤出 */
+            transition: 0.3s;
+            white-space: nowrap;
+            /* 禁止换行 */
         }
 
         .back-btn {
             position: fixed;
-            top: 40px;
-            right: 40px;
-            /* 纵向滑动时，返回按钮放在右上角更方便操作 */
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(30px);
+            top: 25px;
+            right: 25px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 50px;
             cursor: pointer;
             z-index: 100;
+            font-size: 0.9rem;
             color: var(--text-main);
-            transition: all 0.5s var(--ease-poetic);
-        }
-
-        .back-btn:hover {
-            background: #fff;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
         }
 
         @media (max-width: 650px) {
-            .hero-title {
-                font-size: 1.1rem;
-            }
-
-            .question {
-                font-size: 2.2rem;
+            .hero-section {
+                margin-bottom: 2rem;
             }
 
             .parallax-card {
-                width: 85vw;
                 height: 70vh;
             }
 
+            .card-content {
+                padding: 15px;
+            }
+
+            /* 缩小手机端外层边距 */
+            .frosted-overlay {
+                padding: 20px;
+            }
+
+            /* 缩小手机端内层边距 */
+            .card-title {
+                font-size: 1.6rem;
+            }
+
             .back-btn {
-                top: 20px;
-                right: 20px;
-                padding: 10px 20px;
-                font-size: 0.8rem;
+                top: auto;
+                bottom: 30px;
+                right: 50%;
+                transform: translateX(50%);
             }
         }
     </style>
 </head>
 
 <body>
-
     <canvas id="bg-canvas"></canvas>
 
     <div class="container">
         <div id="mood-view" class="view">
             <div class="hero-section">
                 <h1 class="hero-title">Seattle Sakura Mood Map</h1>
-                <p class="hero-subtitle">不要查攻略了，让樱花来匹配你的情绪。</p>
                 <p class="question">今天是什么心情？</p>
             </div>
             <div class="mood-grid">
@@ -335,29 +319,28 @@
         <div id="result-view" class="view hidden">
             <div class="carousel-view">
                 <div class="carousel-container" id="carousel"></div>
-                <button class="back-btn" onclick="goBack()">← 返回心情</button>
+                <button class="back-btn" onclick="goBack()">← 换个心情</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 映射本地图片 pic1.jpg 到 pic8.jpg ---
         const moodData = {
             tired: [
-                { spot: "Kobe Terrace", image: "pic1.jpg", insight: "刚练完 Pilates 实在不想动？在这里买杯热茶，在石灯笼旁看一场慢速落下的樱吹雪。", route: "轻量路线：打车直达停车场，步行 2 分钟即可享受无敌视野。" },
-                { spot: "Japanese Garden", image: "pic2.jpg", insight: "精巧的枯山水与樱花交织，在这里，时间是静止的。适合漫无目的地发呆。", route: "建议入园后左转，茶室附近的樱花密度最高且光线最柔和。" }
+                { spot: "Kobe Terrace", image: "pic1.jpg", insight: "刚练完 Pilates 实在不想动？在石灯笼旁看一场慢速落下的樱吹雪。", route: "轻量路线：打车直达停车场，步行 2 分钟即可享受无敌视野。" },
+                { spot: "Japanese Garden", image: "pic2.jpg", insight: "精巧的枯山水与樱花交织，在这里，时间是静止的。", route: "建议入园后左转，茶室附近的樱花密度最高且光线最柔和。" }
             ],
             pretty: [
-                { spot: "UW Quad", image: "pic3.jpg", insight: "西雅图樱花的绝对 C 位。去粉色隧道里做电影女主角。", route: "9:00 AM 前到达，利用建筑阴影拍出清透的高级感感人像。" },
-                { spot: "Arboretum", image: "pic4.jpg", insight: "层层叠叠的樱花林带，像是一块天然的背景板，适合捕捉全身的氛围感大片。", route: "沿着 Azalea Way 主干道寻找垂向草坪的枝条，那是天然的取景框。" }
+                { spot: "UW Quad", image: "pic3.jpg", insight: "西雅图樱花的绝对 C 位。去粉色隧道里做电影女主角。", route: "9:00 AM 前到达，利用建筑阴影拍出清透的人像感。" },
+                { spot: "Arboretum", image: "pic4.jpg", insight: "层层叠叠的樱花林带，像是一块天然的背景板。", route: "沿着 Azalea Way 寻找垂向草坪的枝条，那是天然的取景框。" }
             ],
             quiet: [
-                { spot: "Heritage Park", image: "pic5.jpg", insight: "躲开华盛顿大学的人潮，这里只有微风拂过花瓣的声音。独享一个下午。", route: "公园南侧的长椅正对着最茂密的那株樱花，是最佳冥想位。" },
-                { spot: "Seward Park", image: "pic6.jpg", insight: "广阔的湖畔，总能找到一棵只属于你的樱花树。看湖水粼粼，花落无声。", route: "避开主入口，向半岛深处走 10 分钟，那里的樱花树更安静、更繁茂。" }
+                { spot: "Heritage Park", image: "pic5.jpg", insight: "躲开华大的人潮，这里只有微风拂过花瓣的声音。", route: "公园南侧的长椅正对着最茂密的那株樱花，是最佳冥想位。" },
+                { spot: "Seward Park", image: "pic6.jpg", insight: "广阔的湖畔，总能找到一棵只属于你的樱花树。", route: "避开主入口向半岛深处走 10 分钟，那里的樱花树更安静。" }
             ],
             romantic: [
-                { spot: "Juanita Beach", image: "pic7.jpg", insight: "夕阳、湖光与樱花。当湖面被染成粉紫色，这就是最完美的约会终点。", route: "黄昏时分去走木栈道，从湖面上回望岸边的樱花，视觉感拉满。" },
-                { spot: "Green Lake", image: "pic8.jpg", insight: "并肩漫步在环湖跑道上，在不经意的转角遇见一场突如其来的樱花雨。", route: "租一艘脚踏船，从湖中心看两岸的粉色缎带，这是最浪漫的视角。" }
+                { spot: "Juanita Beach", image: "pic7.jpg", insight: "夕阳、湖光与樱花。当湖面被染成粉紫色，这就是完美的约会。", route: "黄昏时分去走木栈道，从湖面上回望岸边的樱花。" },
+                { spot: "Green Lake", image: "pic8.jpg", insight: "并肩漫步在环湖跑道上，在不经意的转角遇见突如其来的樱花雨。", route: "租一艘脚踏船，从湖中心看两岸的粉色缎带。" }
             ]
         };
 
@@ -380,17 +363,18 @@
                 this.y = Math.random() * canvas.height - canvas.height;
                 this.w = 12 + Math.random() * 8;
                 this.h = 8 + Math.random() * 8;
-                this.opacity = 0.15 + Math.random() * 0.3;
+                this.opacity = 0.2 + Math.random() * 0.3;
                 this.flip = Math.random() * Math.PI;
-                this.xSpeed = 0.5 + Math.random() * 1.5;
-                this.ySpeed = 1.0 + Math.random() * 1.5;
+                this.xSpeed = 0.5 + Math.random() * 1;
+                this.ySpeed = 1.0 + Math.random() * 1;
                 this.flipSpeed = 0.03 + Math.random() * 0.05;
             }
             draw() {
                 if (this.y > canvas.height || this.x > canvas.width) this.init();
                 this.x += this.xSpeed; this.y += this.ySpeed; this.flip += this.flipSpeed;
                 ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.flip);
-                ctx.scale(Math.sin(this.flip), 1); ctx.beginPath(); ctx.moveTo(0, 0);
+                ctx.scale(Math.sin(this.flip), 1); ctx.beginPath();
+                ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(-this.w / 2, -this.h / 2, -this.w, this.h / 2, 0, this.h);
                 ctx.bezierCurveTo(this.w, this.h / 2, this.w / 2, -this.h / 2, 0, 0);
                 ctx.fillStyle = `rgba(255, 183, 197, ${this.opacity})`; ctx.fill(); ctx.restore();
@@ -404,33 +388,36 @@
             const carousel = document.getElementById('carousel');
             const items = moodData[mood];
             carousel.innerHTML = items.map(item => `
-            <div class="card-wrapper">
-                <div class="parallax-card" onmousemove="tilt(event, this)" onmouseleave="resetTilt(this)">
-                    <div class="card-bg" style="background-image: url('${item.image}')"></div>
-                    <div class="card-content">
-                        <div class="frosted-overlay">
-                            <h2 class="card-title">${item.spot}</h2>
-                            <p class="card-insight">${item.insight}</p>
-                            <p class="card-route">${item.route}</p>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.spot)}+Seattle" target="_blank" class="action-btn">在 Google Maps 中打开</a>
+                <div class="card-wrapper">
+                    <div class="parallax-card" onmousemove="tilt(event, this)" onmouseleave="resetTilt(this)">
+                        <div class="card-bg" style="background-image: url('${item.image}')"></div>
+                        <div class="card-content">
+                            <div class="frosted-overlay">
+                                <h2 class="card-title">${item.spot}</h2>
+                                <p class="card-insight">${item.insight}</p>
+                                <p class="card-route">${item.route}</p>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.spot + ' Seattle')}" 
+                                   target="_blank" class="action-btn">在 Google Maps 中打开</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
             document.getElementById('mood-view').classList.add('hidden');
-            setTimeout(() => { document.getElementById('result-view').classList.remove('hidden'); }, 800);
+            setTimeout(() => { document.getElementById('result-view').classList.remove('hidden'); }, 400);
         }
 
         function goBack() {
             document.getElementById('result-view').classList.add('hidden');
-            setTimeout(() => { document.getElementById('mood-view').classList.remove('hidden'); }, 800);
+            setTimeout(() => { document.getElementById('mood-view').classList.remove('hidden'); }, 400);
         }
 
         function tilt(e, card) {
             const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-            const rotateX = (y - rect.height / 2) / 25; const rotateY = (rect.width / 2 - x) / 25;
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const rotateX = (y - rect.height / 2) / 20;
+            const rotateY = (rect.width / 2 - x) / 20;
             card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
             const bg = card.querySelector('.card-bg');
             bg.style.transform = `scale(1.1) translate(${-rotateY * 4}px, ${rotateX * 4}px)`;
